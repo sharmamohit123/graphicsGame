@@ -1,15 +1,15 @@
 #include "main.h"
 
-#ifndef Pond_H
-#define Pond_H
+#ifndef Magnet_H
+#define Magnet_H
 
 
-class Pond {
+class Magnet {
 public:
-    Pond() {}
-    Pond(float x, float y, float r, color_t color);
+    Magnet() {}
+    Magnet(float x, float y, color_t color);
     glm::vec3 position;
-    float radius;
+    //float radius;
     float rotation;
     void draw(glm::mat4 VP);
     void set_position(float x, float y);
@@ -20,4 +20,4 @@ private:
     VAO *object;
 };
 
-#endif // Pond_H
+#endif // Magnet_H

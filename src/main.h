@@ -77,6 +77,8 @@ void move_right();
 void move_left();
 void move_up();
 void in_water();
+void on_tramp();
+void spike_check();
 //void attach_plank(int i);
 
 extern float screen_zoom, screen_center_x, screen_center_y;
@@ -91,5 +93,13 @@ extern const color_t COLOR_BLACK;
 extern const color_t COLOR_BROWN;
 extern const color_t COLOR_BLUE;
 extern const color_t COLOR_BACKGROUND;
+extern const color_t COLOR_BALL1;
+extern const color_t COLOR_BALL2;
+extern const color_t COLOR_BALL3;
+extern const color_t COLOR_BALL4;
+extern const color_t COLOR_BALL5;
+extern const color_t COLOR_BALL6;
+extern const color_t COLOR_BALL7;
+extern const color_t COLOR_MAGNET;
 
 #endif

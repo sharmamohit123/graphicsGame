@@ -5,11 +5,11 @@ Spike::Spike(float x, float y, color_t color) {
     this->position = glm::vec3(x, y, 0);
     //this->radius = r;
     this->rotation = 0;
-    //speed = 0.01;
+    speed = 0.01;
     static const GLfloat vertex_buffer_data[] = {
-        -8, -3, 0, // vertex 1
-        -8,  -4, 0, // vertex 2
-        8,  -4, 0 // vertex 3
+        0, 0.5, 0, // vertex 1
+        -0.2,  -0.5, 0, // vertex 2
+        0.2,  -0.5, 0 // vertex 3
 
     };
 
@@ -27,14 +27,14 @@ void Spike::draw(glm::mat4 VP) {
     draw3DObject(this->object);
 }
 
-/*void Spike::set_position(float x, float y) {
+void Spike::set_position(float x, float y) {
     this->position = glm::vec3(x, y, 0);
 }
 
 void Spike::tick() {
     this->position.x -= speed;
     // this->position.y -= speed;
-}*/
+}
 
 bounding_box_t Spike::bounding_box() {
     float x = this->position.x, y = this->position.y;

@@ -93,8 +93,12 @@ void Player::left(int in_pond) {
     }
 }
 
-void Player::jump(){
-    gravityspeed = 0.5;
+void Player::jump(int on_tramp){
+    if(on_tramp)
+        gravityspeed = 0.7;
+    else
+        gravityspeed = 0.5;
+
     gravity = -0.02;
 }
 

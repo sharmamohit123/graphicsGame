@@ -7,7 +7,9 @@
 #include "plank.h"
 #include "ground.h"
 #include "math.h"
+#include "spike.h"
 #include "trampoline.h"
+#include "magnet.h"
 
 using namespace std;
 
@@ -27,14 +29,20 @@ Ground ground[5];
 
 Plank plank[100];
 
-Pond pond;
+Pond pond, half_magnet;
+
+Spike spike[20];
 
 Trampoline tramp;
+
+Magnet magnet;
 
 float screen_zoom = 1, screen_center_x = 0, screen_center_y = 0, ran_r, ran_x, ran_y, angle, plank_x, plank_y, plank_l, plank_w, sq_y, p_x, p_y;
 const float pi = 3.14159;
 
-int i, n=20, m=3, rand_ball, rotate, in_pond = 0, touch_pond = 0;
+int i, n=20, m=3, rand_ball, rotate, in_pond = 0, touch_pond = 0, ran_c;
+
+color_t color[] = {COLOR_BALL1, COLOR_BALL2, COLOR_BALL3, COLOR_BALL4, COLOR_BALL5, COLOR_BALL6, COLOR_BALL7};
 
 Timer t60(1.0 / 60);
 
@@ -84,6 +92,10 @@ void draw() {
     }
     pond.draw(VP);
     tramp.draw(VP);
+    for(i=0;i<7;i++)
+        spike[i].draw(VP);
+    magnet.draw(VP);
+    half_magnet.draw(VP);
     player.draw(VP);
 
 }
@@ -104,7 +116,7 @@ void tick_elements() {
     player.tick(in_pond);
     for(i=0;i<n;i++){
         if (detect_collision(player.bounding_box(), ball[i].bounding_box()) && player.gravityspeed < 0) {
-            player.jump();
+            player.jump(0);
             ball[i].position.x = -10;
             if(ball[i].nplank != -1){
                 plank[ball[i].nplank].position.x = ball[i].position.x + ball[i].radius*cos(2*pi*ball[i].angle);
@@ -116,6 +128,8 @@ void tick_elements() {
     for(i=0;i<m;i++){
         plank[i].tick();
     }
+    for(i=0;i<7;i++)
+        spike[i].tick();
 }
 
 void refresh(){
@@ -142,14 +156,27 @@ void initGL(GLFWwindow *window, int width, int height) {
         ran_x = (rand() % 160000 + 1 - 80000)*0.0001;
         ran_y = (rand() % 90000 + 1 - 25000)*0.0001;
         ran_r = (rand() % 400 + 400)*0.001;
-        ball[i] = Ball(ran_x, ran_y, ran_r, COLOR_YELLOW );
+        ran_c =rand() % 7;
+        ball[i] = Ball(ran_x, ran_y, ran_r, color[ran_c] );
         ball[i].speed = (rand() % 500 + 200)*(-0.0001);
     }
         ground[0]=Ground(0, -1, COLOR_GREEN);
     for(i=1;i<4;i++)
         ground[i] = Ground(0, -i-1, COLOR_BROWN);
-    pond = Pond(-1, -4, COLOR_BLUE);
+    pond = Pond(-1, -4, 2.5, COLOR_BLUE);
     tramp = Trampoline(6, -2.7, COLOR_DARK_RED);
+
+    spike[0] = Spike( 2, -3.5, COLOR_BLACK);
+    spike[1] = Spike( 2.4, -3.5, COLOR_BLACK);
+    spike[2] = Spike( 2.8, -3.5, COLOR_BLACK);
+    spike[3] = Spike( -6.5, -3.5, COLOR_BLACK);
+    spike[4] = Spike( -6.9, -3.5, COLOR_BLACK);
+    spike[5] = Spike( -7.3, -3.5, COLOR_BLACK);
+    spike[6] = Spike( -7.7, -3.5, COLOR_BLACK);
+
+    magnet = Magnet(-7, 6, COLOR_MAGNET);
+    half_magnet = Pond(-7, 6, 0.5, COLOR_BACKGROUND);
+    half_magnet.rotation = -90;
 
     for(i=0;i<m;i++){
         rand_ball = rand()%n;
@@ -217,6 +244,8 @@ int main(int argc, char **argv) {
             refresh();
             tick_input(window);
             in_water();
+            on_tramp();
+            spike_check();
         }
 
         // Poll for Keyboard and mouse events
@@ -244,7 +273,7 @@ void move_left(){
 void move_up(){
     touch_pond = 0;
     if(player.position.y - player.radius <= -4)
-        player.jump();
+        player.jump(0);
 }
 
 void in_water(){
@@ -301,6 +330,23 @@ void in_water(){
     if(player.position.x >= right || player.position.x <= left || player.position.y-player.radius>-4){
         in_pond = 0;
         touch_pond = 0;
+    }
+}
+
+void on_tramp(){
+    if(player.gravityspeed<0 && player.position.x>=4.7 && player.position.x <= 7.3 && player.position.y-player.radius<=-2.7){
+        player.jump(1);
+    }
+}
+
+void spike_check(){
+    if(spike[0].position.x <= 1.7 || spike[2].position.x >= 7.8){
+        for(i=0;i<3;i++)
+            spike[i].speed = -spike[i].speed;
+    }
+    if(spike[3].position.x >=-3.7 || spike[6].position.x <= -7.8){
+        for(i=3;i<7;i++)
+            spike[i].speed = -spike[i].speed;
     }
 }
 

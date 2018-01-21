@@ -17,7 +17,7 @@ public:
     void tick(int in_pond);
     void right(int in_pond);
     void left(int in_pond);
-    void jump();
+    void jump(int on_tramp);
     double speedx;
     double speedy;
     double gravity;
