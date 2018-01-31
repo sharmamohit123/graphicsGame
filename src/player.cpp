@@ -10,6 +10,7 @@ Player::Player(float x, float y, float r, color_t color) {
     gravity = -0.02;
     gravityspeedx = 0;
     gravityspeedy = 0;
+    rspeed = 0;
     score = 0;
     level = 1;
     lives = 5;
@@ -22,7 +23,7 @@ Player::Player(float x, float y, float r, color_t color) {
         -0.2, 0.2, 0, // vertex 4
         -0.2, -0.2, 0 // vertex 1
     };*/
-    int pos=0,i,j,n=100;
+    int pos=0,i,j,n=96;
         //Any polygon can be created by changing of n
         GLfloat g_vertex_buffer_data[9*n];
         float pi = 3.14159, angle = 0, theta=(2*pi)/n;
@@ -39,7 +40,12 @@ Player::Player(float x, float y, float r, color_t color) {
             angle-=theta;
         }
 
-    this->object = create3DObject(GL_TRIANGLES, 3*n, g_vertex_buffer_data, color, GL_FILL);
+    this->object = create3DObject(GL_TRIANGLES, n/2, g_vertex_buffer_data, COLOR_BALL1, GL_FILL);
+    this->object1 = create3DObject(GL_TRIANGLES, n/2, g_vertex_buffer_data + 3*n/2, COLOR_BALL2, GL_FILL);
+    this->object2 = create3DObject(GL_TRIANGLES, n/2, g_vertex_buffer_data + 3*n, COLOR_BALL3, GL_FILL);
+    this->object3 = create3DObject(GL_TRIANGLES, n/2, g_vertex_buffer_data + 9*n/2, COLOR_BALL4, GL_FILL);
+    this->object4 = create3DObject(GL_TRIANGLES, n/2, g_vertex_buffer_data + 6*n, COLOR_BALL5, GL_FILL);
+    this->object5 = create3DObject(GL_TRIANGLES, n/2, g_vertex_buffer_data + 15*n/2, COLOR_BALL6, GL_FILL);
 }
 
 void Player::draw(glm::mat4 VP) {
@@ -51,6 +57,11 @@ void Player::draw(glm::mat4 VP) {
     glm::mat4 MVP = VP * Matrices.model;
     glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
     draw3DObject(this->object);
+    draw3DObject(this->object1);
+    draw3DObject(this->object2);
+    draw3DObject(this->object3);
+    draw3DObject(this->object4);
+    draw3DObject(this->object5);
 }
 
 void Player::set_position(float x, float y) {
@@ -63,11 +74,14 @@ void Player::tick(int in_pond) {
         gravityspeedy += gravity;
         this->position.y += speedy+gravityspeedy;
 
+        this->position.x += rspeed;
+
         if(this->position.y-this->radius <= -4){
             this->position.y = -4 + this->radius;
             speedy = 0;
             gravityspeedy = 0;
             gravity = 0;
+            rspeed = 0;
         }
     }
 
@@ -84,6 +98,7 @@ void Player::tick(int in_pond) {
 
 void Player::magnet_force(){
     //gravity = 0.0002;
+    this->rotation += 10;
     gravityspeedx += 0.0002;
     //if(this->position.x - gravityspeedx - this->radius >= -8)
         this->position.x -= gravityspeedx;
@@ -91,6 +106,7 @@ void Player::magnet_force(){
 }
 
 void Player::right(int in_pond) {
+    this->rotation -= 10;
     //if(this->position.x + speedx + this->radius <= 8){
         if(in_pond)
             this->position.x += speedx*0.7;
@@ -101,6 +117,7 @@ void Player::right(int in_pond) {
 }
 
 void Player::left(int in_pond) {
+    this->rotation += 10;
     //if(this->position.x - speedx - this->radius >= -8){
         if(in_pond)
             this->position.x -= speedx*0.7;

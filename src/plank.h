@@ -13,6 +13,7 @@ public:
     float length;
     float width;
     float rotation;
+    int nball;
     void draw(glm::mat4 VP);
     void set_position(float x, float y);
     void tick();

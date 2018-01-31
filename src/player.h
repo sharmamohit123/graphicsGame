@@ -26,9 +26,15 @@ public:
     double gravity;
     double gravityspeedx;
     double gravityspeedy;
+    double rspeed;
     bounding_box_t bounding_box();
 private:
     VAO *object;
+    VAO *object1;
+    VAO *object2;
+    VAO *object3;
+    VAO *object4;
+    VAO *object5;
 };
 
 #endif // Player_H

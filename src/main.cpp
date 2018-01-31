@@ -108,8 +108,6 @@ void draw() {
         half_magnet.draw(VP);
         //is_magnet = 1;
         player.magnet_force();
-        screen_center_x -= player.gravityspeedx;
-        reset_screen();
         if(magnet_time == 1500){
             magnet_time = 0;
             player.gravityspeedx = 0;
@@ -142,12 +140,10 @@ void tick_elements() {
         ball[i].tick();
     player.tick(in_pond);
     for(i=0;i<n;i++){
-        if (detect_collision(player.bounding_box(), ball[i].bounding_box()) && player.gravityspeedy < 0) {
+        if (ball[i].nplank == -1 && detect_collision(player.bounding_box(), ball[i].bounding_box()) && player.gravityspeedy < 0) {
+            player.rspeed = 0;
             player.jump(0);
             ball[i].position.x = -110;
-            if(ball[i].nplank != -1){
-                plank[ball[i].nplank].position.x = ball[i].position.x + ball[i].radius*cos(2*pi*ball[i].angle);
-            }
             player.score += ball[i].kill_score;
             //ball2.speed = -ball2.speed;
         }
@@ -245,7 +241,7 @@ void initGL(GLFWwindow *window, int width, int height) {
         rand_ball = rand()%n;
         while(ball[rand_ball].nplank!=-1)
             rand_ball = rand()%n;
-        angle = (rand()%40+10)*0.01;
+        angle = (rand()%30+10)*0.01;
         //rotate = rand()%360;
         plank_x = ball[rand_ball].position.x + ball[rand_ball].radius*cos(2*pi*angle);
         plank_y = ball[rand_ball].position.y + ball[rand_ball].radius*sin(2*pi*angle);
@@ -254,19 +250,20 @@ void initGL(GLFWwindow *window, int width, int height) {
         printf("%f %f %d\n", plank_l, plank_w, rand_ball);
         ball[rand_ball].nplank = i;
         ball[rand_ball].angle = angle;
-        if(i==0){
+        /*if(i==0){
             ball[rand_ball].nplank = -1;
             plank[i] = Plank(4, 2, 4, 0.5, COLOR_BLACK);
-            plank[i].rotation = 120;
+            plank[i].rotation = 140;
             plank[i].speed = 0;
-        }
-        else{
+        }*/
+        //else{
             plank[i] = Plank(plank_x, plank_y, plank_l, plank_w, COLOR_BLACK);
             plank[i].speed = ball[rand_ball].speed;
 
             plank[i].rotation = 360*angle - 90;
-        }
-        printf("length=%f width=%f\n", plank[i].length, plank[i].width);
+            plank[i].nball= rand_ball;
+        //}
+        //printf("length=%f width=%f\n", plank[i].length, plank[i].width);
     }
 
     // Create and compile our GLSL program from the shaders
@@ -468,60 +465,9 @@ void spike_kill(){
 
 }
 
-/*void touch_plank(){
-    float x1, x2, x3, y1, y2, y3, x4, y4, slope, p_slope, m1;
-    for(i=0;i<1;i++){
-        plank_x = plank[i].position.x;
-        plank_y = plank[i].position.y;
-        plank_l = plank[i].length;
-        plank_w = plank[i].width;
-        slope = plank[i].rotation;
-        if(slope <= 90)
-            p_slope = 90 + slope;
-        else
-            p_slope = slope - 90;
-        x1 = plank_x + plank_w*cos(p_slope*pi/180);
-        y1 = plank_y + plank_w*sin(p_slope*pi/180);
-
-        x2 = x1 + plank_l/2*cos(slope*pi/180);
-        y2 = y1 + plank_l/2*sin(slope*pi/180);
-
-        x3 = x1 - plank_l/2*cos(slope*pi/180);
-        y3 = y1 - plank_l/2*sin(slope*pi/180);
-
-        //printf("length=%f width=%f\n",plank_l, plank_w);
-        if(slope<=90){
-            if(player.position.x+player.radius > x3 && player.position.x-player.radius < x2){
-                x1 = player.position.x;
-                y1 = player.position.y;
-                m1 = tan(slope*pi/180);
-                y4 = (m1*x1 - y1 - m1*x2 + y2)/(1+m1*m1) + y1;
-                //printf("x4=%f y4=%f\n",x4,y4);
-                //y4 = player.position.y - player.radius*sin(p_slope*pi/180);
-                if(abs(player.position.y - player.radius*sin(p_slope*pi/180) -y4) <= 0.01 && player.gravityspeedy < 0){
-                    player.jump(0);
-                }
-            }
-        }
-        else{
-            if(player.position.x+player.radius > x2 && player.position.x-player.radius < x3){
-                x1 = player.position.x;
-                y1 = player.position.y;
-                m1 = tan(slope*pi/180);
-                y4 = (m1*x1 - y1 - m1*x2 + y2)/(1+m1*m1) + y1;
-                //printf("x4=%f y4=%f\n",x4,y4);
-                //printf("exp_y=%f\n",player.position.y - player.radius*sin(p_slope*pi/180));
-                if(abs(player.position.y - player.radius*sin(p_slope*pi/180) -y4) <= 0.01 && player.gravityspeedy < 0){
-                    player.jump(0);
-                }
-            }
-        }
-    }
-}*/
-
 void touch_plank(){
     float x1, x2, y1, y2, slope, m1, b, d;
-    for(i=0;i<1;i++){
+    for(i=0;i<m;i++){
         plank_x = plank[i].position.x;
         plank_y = plank[i].position.y;
         plank_l = plank[i].length;
@@ -530,13 +476,29 @@ void touch_plank(){
         x1 = player.position.x;
         y1 = player.position.y;
         m1 = tan(slope*pi/180);
-        x2 = (m1*x1 - y1 - m1*plank_x + plank_y)/(1+m1*m1) + y1;
-        y2 = (-1*m1)*(m1*x1 - y1 - m1*plank_x + plank_y)/(1+m1*m1) + x1;
+        //printf("m1=%lf\n",m1);
+        y2 = (m1*x1 - y1 - m1*plank_x + plank_y)/(1+m1*m1) + y1;
+        x2 = (-1*m1)*(m1*x1 - y1 - m1*plank_x + plank_y)/(1+m1*m1) + x1;
         d = abs(m1*x1 - y1 - m1*plank_x + plank_y)/sqrt(1+m1*m1);
         b = (x2-plank_x)*(x2-plank_x)+(y2-plank_y)*(y2-plank_y);
+        //printf("x2=%lf y2=%lf\n",x2,y2);
         if(sqrt(b)<= plank_l/2){
-            if(d<player.radius+plank_w && player.gravityspeedy<0)
-                player.jump(0);
+            if(d<player.radius && player.gravityspeedy<0){
+                //player.jump(0);
+                /*player.gravityspeedy = -1*((player.gravityspeedx+player.speedx)*sin(2*slope)-player.gravityspeedy*cos(2*slope))+0.3;
+                if(slope>90)
+                    player.rspeed = -0.5*((player.gravityspeedx+player.speedx)*cos(2*slope)+player.gravityspeedy*sin(2*slope));
+                else
+                    player.rspeed = 0.8*((player.gravityspeedx+player.speedx)*cos(2*slope)+player.gravityspeedy*sin(2*slope));*/
+                player.gravityspeedy = -1*player.gravityspeedy;
+                if(slope<=90 && slope>0)
+                    player.rspeed = -0.2;
+                else
+                    player.rspeed = 0.2;
+
+                ball[plank[i].nball].position.x=-110;
+                plank[i].position.x = ball[plank[i].nball].position.x + ball[plank[i].nball].radius*cos(2*pi*ball[plank[i].nball].angle);
+            }
         }
     }
 }
