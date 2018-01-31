@@ -21,11 +21,11 @@ GLFWwindow *window;
 * Customizable functions *
 **************************/
 
-Ball ball[100];
+Ball ball[250];
 
 Player player;
 
-Ground ground[5];
+Ground ground[50];
 
 Plank plank[100];
 
@@ -39,8 +39,11 @@ Magnet magnet;
 
 float screen_zoom = 1, screen_center_x = 0, screen_center_y = 0, ran_r, ran_x, ran_y, angle, plank_x, plank_y, plank_l, plank_w, sq_y, p_x, p_y;
 const float pi = 3.14159;
+float top1, bottom1, left1=0, right1=0;
 
-int i, n=20, m=3, rand_ball, rotate, in_pond = 0, touch_pond = 0, ran_c;
+//float x1, x2, y2, x3, y3, slope, p_slope;
+
+int i, n=200, m = 20, rand_ball, rotate, in_pond = 0, touch_pond = 0, ran_c, magnet_time=0;
 
 color_t color[] = {COLOR_BALL1, COLOR_BALL2, COLOR_BALL3, COLOR_BALL4, COLOR_BALL5, COLOR_BALL6, COLOR_BALL7};
 
@@ -82,9 +85,10 @@ void draw() {
     //ball2.draw(VP);
 
     for(i=0;i<n;i++){
+        //if(ball[i].nplank != -1)
         ball[i].draw(VP);
     }
-    for(i=0;i<4;i++){
+    for(i=0;i<25;i++){
         ground[i].draw(VP);
     }
     for(i=0;i<m;i++){
@@ -92,10 +96,26 @@ void draw() {
     }
     pond.draw(VP);
     tramp.draw(VP);
-    for(i=0;i<7;i++)
+    for(i=0;i<14;i++)
         spike[i].draw(VP);
-    magnet.draw(VP);
-    half_magnet.draw(VP);
+
+    if(magnet_time >= 1000 && magnet_time <= 1500){
+        magnet.position.x = screen_center_x - 7;
+        magnet.position.y = screen_center_y + 6;
+        half_magnet.position.x = screen_center_x - 7;
+        half_magnet.position.y = screen_center_y + 6;
+        magnet.draw(VP);
+        half_magnet.draw(VP);
+        //is_magnet = 1;
+        player.magnet_force();
+        screen_center_x -= player.gravityspeedx;
+        reset_screen();
+        if(magnet_time == 1500){
+            magnet_time = 0;
+            player.gravityspeedx = 0;
+            //is_magnet = 0;
+        }
+    }
     player.draw(VP);
 
 }
@@ -103,8 +123,15 @@ void draw() {
 void tick_input(GLFWwindow *window) {
     int left  = glfwGetKey(window, GLFW_KEY_LEFT);
     int right = glfwGetKey(window, GLFW_KEY_RIGHT);
+    int up = glfwGetKey(window, GLFW_KEY_UP);
     if (left) {
-        // Do something
+        move_left();
+    }
+    if(right){
+        move_right();
+    }
+    if(up){
+        move_up();
     }
 }
 
@@ -115,27 +142,52 @@ void tick_elements() {
         ball[i].tick();
     player.tick(in_pond);
     for(i=0;i<n;i++){
-        if (detect_collision(player.bounding_box(), ball[i].bounding_box()) && player.gravityspeed < 0) {
+        if (detect_collision(player.bounding_box(), ball[i].bounding_box()) && player.gravityspeedy < 0) {
             player.jump(0);
-            ball[i].position.x = -10;
+            ball[i].position.x = -110;
             if(ball[i].nplank != -1){
                 plank[ball[i].nplank].position.x = ball[i].position.x + ball[i].radius*cos(2*pi*ball[i].angle);
             }
-            player.score += 10;
+            player.score += ball[i].kill_score;
             //ball2.speed = -ball2.speed;
         }
     }
     for(i=0;i<m;i++){
         plank[i].tick();
     }
-    for(i=0;i<7;i++)
+    for(i=0;i<14;i++)
         spike[i].tick();
+
+    if(player.score >= 2000 && player.score < 4000){
+        if(player.level == 1){
+            for(i=0;i<n;i++){
+                ball[i].speed -= 0.1;
+                if(ball[i].nplank!=-1)
+                    plank[ball[i].nplank].speed -= 0.1;
+            }
+        }
+        player.level=2;
+    }
+    else if(player.score >=4000){
+        if(player.level == 2){
+            for(i=0;i<n;i++){
+                ball[i].speed -= 0.1;
+                if(ball[i].nplank!=-1)
+                    plank[ball[i].nplank].speed -= 0.1;
+            }
+        }
+        player.level = 3;
+    }
+
+    if(player.lives == 0){
+        quit(window);
+    }
 }
 
 void refresh(){
     for(i=0;i<n;i++){
-        if(ball[i].position.x - ball[i].radius > 8){
-            ball[i].position.x = -8;
+        if(ball[i].position.x - ball[i].radius > 100){
+            ball[i].position.x = -100;
             if(ball[i].nplank != -1){
                 plank[ball[i].nplank].position.x = ball[i].position.x + ball[i].radius*cos(2*pi*ball[i].angle);
                 //plank[ball[i].nplank].position.y = ball[i].position.y + ball[i].radius*sin(2*pi*angle);
@@ -153,26 +205,37 @@ void initGL(GLFWwindow *window, int width, int height) {
 
     player = Player(-5, -3.4, 0.6, COLOR_RED);
     for(i=0;i<n;i++){
-        ran_x = (rand() % 160000 + 1 - 80000)*0.0001;
+        ran_x = (rand() % 2000000 + 1 - 1000000)*0.0001;
         ran_y = (rand() % 90000 + 1 - 25000)*0.0001;
         ran_r = (rand() % 400 + 400)*0.001;
         ran_c =rand() % 7;
         ball[i] = Ball(ran_x, ran_y, ran_r, color[ran_c] );
         ball[i].speed = (rand() % 500 + 200)*(-0.0001);
+        ball[i].kill_score = (ran_c+1)*5;
     }
         ground[0]=Ground(0, -1, COLOR_GREEN);
-    for(i=1;i<4;i++)
+    for(i=1;i<25;i++)
         ground[i] = Ground(0, -i-1, COLOR_BROWN);
     pond = Pond(-1, -4, 2.5, COLOR_BLUE);
     tramp = Trampoline(6, -2.7, COLOR_DARK_RED);
 
-    spike[0] = Spike( 2, -3.5, COLOR_BLACK);
-    spike[1] = Spike( 2.4, -3.5, COLOR_BLACK);
-    spike[2] = Spike( 2.8, -3.5, COLOR_BLACK);
+    spike[0] = Spike( 10, -3.5, COLOR_BLACK);
+    spike[1] = Spike( 10.4, -3.5, COLOR_BLACK);
+    spike[2] = Spike( 10.8, -3.5, COLOR_BLACK);
+
     spike[3] = Spike( -6.5, -3.5, COLOR_BLACK);
     spike[4] = Spike( -6.9, -3.5, COLOR_BLACK);
     spike[5] = Spike( -7.3, -3.5, COLOR_BLACK);
     spike[6] = Spike( -7.7, -3.5, COLOR_BLACK);
+
+    spike[7] = Spike( -20, -3.5, COLOR_BLACK);
+    spike[8] = Spike( -20.4, -3.5, COLOR_BLACK);
+    spike[9] = Spike( -20.8, -3.5, COLOR_BLACK);
+
+    spike[10] = Spike( 40.5, -3.5, COLOR_BLACK);
+    spike[11] = Spike( 40.9, -3.5, COLOR_BLACK);
+    spike[12] = Spike( 41.3, -3.5, COLOR_BLACK);
+    spike[13] = Spike( 41.7, -3.5, COLOR_BLACK);
 
     magnet = Magnet(-7, 6, COLOR_MAGNET);
     half_magnet = Pond(-7, 6, 0.5, COLOR_BACKGROUND);
@@ -182,7 +245,7 @@ void initGL(GLFWwindow *window, int width, int height) {
         rand_ball = rand()%n;
         while(ball[rand_ball].nplank!=-1)
             rand_ball = rand()%n;
-        angle = (rand()%50+1)*0.01;
+        angle = (rand()%40+10)*0.01;
         //rotate = rand()%360;
         plank_x = ball[rand_ball].position.x + ball[rand_ball].radius*cos(2*pi*angle);
         plank_y = ball[rand_ball].position.y + ball[rand_ball].radius*sin(2*pi*angle);
@@ -191,11 +254,20 @@ void initGL(GLFWwindow *window, int width, int height) {
         printf("%f %f %d\n", plank_l, plank_w, rand_ball);
         ball[rand_ball].nplank = i;
         ball[rand_ball].angle = angle;
-        plank[i] = Plank(plank_x, plank_y, plank_l, plank_w, COLOR_BLACK);
-        plank[i].speed = ball[rand_ball].speed;
-        plank[i].rotation = 360*angle - 90;
-    }
+        if(i==0){
+            ball[rand_ball].nplank = -1;
+            plank[i] = Plank(4, 2, 4, 0.5, COLOR_BLACK);
+            plank[i].rotation = 120;
+            plank[i].speed = 0;
+        }
+        else{
+            plank[i] = Plank(plank_x, plank_y, plank_l, plank_w, COLOR_BLACK);
+            plank[i].speed = ball[rand_ball].speed;
 
+            plank[i].rotation = 360*angle - 90;
+        }
+        printf("length=%f width=%f\n", plank[i].length, plank[i].width);
+    }
 
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders("Sample_GL.vert", "Sample_GL.frag");
@@ -240,12 +312,35 @@ int main(int argc, char **argv) {
             // Swap Frame Buffer in double buffering
             glfwSwapBuffers(window);
 
+            char score[50];
+            sprintf(score,"%d",player.score);
+            char str1[200]= "Score: ";
+            strcat(str1,score);
+
+            char lives[50];
+            sprintf(lives,"%d",player.lives);
+            //char str2[60]= "Lives: ";
+            strcat(str1,"   Lives: ");
+            strcat(str1, lives);
+
+            char level[50];
+            sprintf(level,"%d",player.level);
+            //char str3[60]= "Level: ";
+            strcat(str1,"   Level: ");
+            strcat(str1, level);
+
+            glfwSetWindowTitle(window,str1);
+
             tick_elements();
             refresh();
             tick_input(window);
             in_water();
             on_tramp();
             spike_check();
+            spike_kill();
+            touch_plank();
+            span_screen();
+            magnet_time+=1;
         }
 
         // Poll for Keyboard and mouse events
@@ -262,6 +357,7 @@ bool detect_collision(bounding_box_t a, bounding_box_t b) {
 
 void move_right(){
     //printf("speed = %lf", player.speedx);
+
     player.right(in_pond);
 }
 
@@ -334,26 +430,136 @@ void in_water(){
 }
 
 void on_tramp(){
-    if(player.gravityspeed<0 && player.position.x>=4.7 && player.position.x <= 7.3 && player.position.y-player.radius<=-2.7){
+    if(player.gravityspeedy<0 && player.position.x>=4.7 && player.position.x <= 7.3 && player.position.y-player.radius<=-2.7){
         player.jump(1);
     }
 }
 
 void spike_check(){
-    if(spike[0].position.x <= 1.7 || spike[2].position.x >= 7.8){
+    if(spike[0].position.x <= 1.7 || spike[2].position.x >= 60){
         for(i=0;i<3;i++)
             spike[i].speed = -spike[i].speed;
     }
-    if(spike[3].position.x >=-3.7 || spike[6].position.x <= -7.8){
+    if(spike[3].position.x >=-4 || spike[6].position.x <= -50){
         for(i=3;i<7;i++)
+            spike[i].speed = -spike[i].speed;
+    }
+    if(spike[10].position.x <= 1.7 || spike[13].position.x >= 60){
+        for(i=10;i<14;i++)
+            spike[i].speed = -spike[i].speed;
+    }
+    if(spike[7].position.x >=-4 || spike[9].position.x <= -50){
+        for(i=7;i<10;i++)
             spike[i].speed = -spike[i].speed;
     }
 }
 
+void spike_kill(){
+    if(player.position.y - player.radius <= -3 && player.gravityspeedy < 0){
+        if((player.position.x +player.radius >= spike[0].position.x && player.position.x <= spike[2].position.x)
+                || (player.position.x <= spike[3].position.x && player.position.x >= spike[6].position.x)
+                || (player.position.x <= spike[7].position.x && player.position.x >= spike[9].position.x)
+                || (player.position.x >= spike[10].position.x && player.position.x <= spike[13].position.x)){
+            player.set_position(-5, -3.4);
+            player.lives -= 1;
+            //printf("lives=%d\n", player.lives);
+        }
+    }
+
+}
+
+/*void touch_plank(){
+    float x1, x2, x3, y1, y2, y3, x4, y4, slope, p_slope, m1;
+    for(i=0;i<1;i++){
+        plank_x = plank[i].position.x;
+        plank_y = plank[i].position.y;
+        plank_l = plank[i].length;
+        plank_w = plank[i].width;
+        slope = plank[i].rotation;
+        if(slope <= 90)
+            p_slope = 90 + slope;
+        else
+            p_slope = slope - 90;
+        x1 = plank_x + plank_w*cos(p_slope*pi/180);
+        y1 = plank_y + plank_w*sin(p_slope*pi/180);
+
+        x2 = x1 + plank_l/2*cos(slope*pi/180);
+        y2 = y1 + plank_l/2*sin(slope*pi/180);
+
+        x3 = x1 - plank_l/2*cos(slope*pi/180);
+        y3 = y1 - plank_l/2*sin(slope*pi/180);
+
+        //printf("length=%f width=%f\n",plank_l, plank_w);
+        if(slope<=90){
+            if(player.position.x+player.radius > x3 && player.position.x-player.radius < x2){
+                x1 = player.position.x;
+                y1 = player.position.y;
+                m1 = tan(slope*pi/180);
+                y4 = (m1*x1 - y1 - m1*x2 + y2)/(1+m1*m1) + y1;
+                //printf("x4=%f y4=%f\n",x4,y4);
+                //y4 = player.position.y - player.radius*sin(p_slope*pi/180);
+                if(abs(player.position.y - player.radius*sin(p_slope*pi/180) -y4) <= 0.01 && player.gravityspeedy < 0){
+                    player.jump(0);
+                }
+            }
+        }
+        else{
+            if(player.position.x+player.radius > x2 && player.position.x-player.radius < x3){
+                x1 = player.position.x;
+                y1 = player.position.y;
+                m1 = tan(slope*pi/180);
+                y4 = (m1*x1 - y1 - m1*x2 + y2)/(1+m1*m1) + y1;
+                //printf("x4=%f y4=%f\n",x4,y4);
+                //printf("exp_y=%f\n",player.position.y - player.radius*sin(p_slope*pi/180));
+                if(abs(player.position.y - player.radius*sin(p_slope*pi/180) -y4) <= 0.01 && player.gravityspeedy < 0){
+                    player.jump(0);
+                }
+            }
+        }
+    }
+}*/
+
+void touch_plank(){
+    float x1, x2, y1, y2, slope, m1, b, d;
+    for(i=0;i<1;i++){
+        plank_x = plank[i].position.x;
+        plank_y = plank[i].position.y;
+        plank_l = plank[i].length;
+        plank_w = plank[i].width;
+        slope = plank[i].rotation;
+        x1 = player.position.x;
+        y1 = player.position.y;
+        m1 = tan(slope*pi/180);
+        x2 = (m1*x1 - y1 - m1*plank_x + plank_y)/(1+m1*m1) + y1;
+        y2 = (-1*m1)*(m1*x1 - y1 - m1*plank_x + plank_y)/(1+m1*m1) + x1;
+        d = abs(m1*x1 - y1 - m1*plank_x + plank_y)/sqrt(1+m1*m1);
+        b = (x2-plank_x)*(x2-plank_x)+(y2-plank_y)*(y2-plank_y);
+        if(sqrt(b)<= plank_l/2){
+            if(d<player.radius+plank_w && player.gravityspeedy<0)
+                player.jump(0);
+        }
+    }
+}
+
+void span_screen(){
+    screen_center_x = player.position.x + 4;
+    screen_center_y = player.position.y*0.3 + 1;
+    reset_screen();
+}
+
+void zoom_screen(int type){
+    if(type == 1 && screen_zoom > 0.4)
+        screen_zoom -= 0.03;
+    else if(type == -1 && screen_zoom < 1.6){
+        screen_zoom += 0.03;
+    }
+    //printf("zoom=%lf\n", screen_zoom);
+}
+
 void reset_screen() {
-    float top    = screen_center_y + 8 / screen_zoom;
-    float bottom = screen_center_y - 8 / screen_zoom;
-    float left   = screen_center_x - 8 / screen_zoom;
-    float right  = screen_center_x + 8 / screen_zoom;
-    Matrices.projection = glm::ortho(left, right, bottom, top, 0.1f, 500.0f);
+    top1    = screen_center_y + 8 / screen_zoom;
+    bottom1 = screen_center_y - 8 / screen_zoom;
+    left1   = screen_center_x - 8 / screen_zoom;
+    right1  = screen_center_x + 8 / screen_zoom;
+    Matrices.projection = glm::ortho(left1, right1, bottom1, top1, 0.1f, 500.0f);
 }

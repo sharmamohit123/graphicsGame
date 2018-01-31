@@ -12,16 +12,20 @@ public:
     float radius;
     float rotation;
     int score;
+    int level;
+    int lives;
     void draw(glm::mat4 VP);
     void set_position(float x, float y);
     void tick(int in_pond);
     void right(int in_pond);
     void left(int in_pond);
     void jump(int on_tramp);
+    void magnet_force();
     double speedx;
     double speedy;
     double gravity;
-    double gravityspeed;
+    double gravityspeedx;
+    double gravityspeedy;
     bounding_box_t bounding_box();
 private:
     VAO *object;

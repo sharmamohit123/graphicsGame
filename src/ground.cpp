@@ -7,13 +7,13 @@ Ground::Ground(float x, float y, color_t color) {
     this->rotation = 0;
     //speed = 0.01;
     static const GLfloat vertex_buffer_data[] = {
-        -8, -3, 0, // vertex 1
-        -8,  -4, 0, // vertex 2
-        8,  -4, 0, // vertex 3
+        -100, -3, 0, // vertex 1
+        -100,  -4, 0, // vertex 2
+       100,  -4, 0, // vertex 3
 
-        8,  -4, 0, // vertex 3
-        8, -3, 0, // vertex 4
-        -8, -3, 0 // vertex 1
+        100,  -4, 0, // vertex 3
+        100, -3, 0, // vertex 4
+        -100, -3, 0 // vertex 1
     };
 
     this->object = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color, GL_FILL);

@@ -13,6 +13,7 @@ public:
     float rotation;
     int nplank;
     float angle;
+    int kill_score;
     void draw(glm::mat4 VP);
     void set_position(float x, float y);
     void tick();

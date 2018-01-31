@@ -58,16 +58,6 @@ void keyboardChar(GLFWwindow *window, unsigned int key) {
     case 'q':
         quit(window);
         break;
-
-    case 'd':
-        move_right();
-        break;
-    case 'a':
-        move_left();
-        break;
-    case ' ':
-        move_up();
-        break;
     default:
         break;
     }
@@ -96,4 +86,8 @@ void mouseButton(GLFWwindow *window, int button, int action, int mods) {
 
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
     // Do something
+    if(yoffset<0)
+        zoom_screen(1);
+    if(yoffset>0)
+        zoom_screen(-1);
 }

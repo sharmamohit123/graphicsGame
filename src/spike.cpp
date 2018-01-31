@@ -5,7 +5,7 @@ Spike::Spike(float x, float y, color_t color) {
     this->position = glm::vec3(x, y, 0);
     //this->radius = r;
     this->rotation = 0;
-    speed = 0.01;
+    speed = 0.03;
     static const GLfloat vertex_buffer_data[] = {
         0, 0.5, 0, // vertex 1
         -0.2,  -0.5, 0, // vertex 2

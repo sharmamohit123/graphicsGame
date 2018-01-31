@@ -5,6 +5,10 @@
 #include <cmath>
 #include <fstream>
 #include <vector>
+#include<stdlib.h>
+#include<stdio.h>
+#include <sstream>
+#include <string.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -83,6 +87,10 @@ void spike_check();
 
 extern float screen_zoom, screen_center_x, screen_center_y;
 void reset_screen();
+void spike_kill();
+void touch_plank();
+void span_screen();
+void zoom_screen(int type);
 
 // ---- Colors ----
 extern const color_t COLOR_RED;

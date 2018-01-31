@@ -5,11 +5,14 @@ Player::Player(float x, float y, float r, color_t color) {
     this->position = glm::vec3(x, y, 0);
     this->radius = r;
     this->rotation = 0;
-    speedx = 0.2;
+    speedx = 0.1;
     speedy = 0;
     gravity = -0.02;
-    gravityspeed = 0;
+    gravityspeedx = 0;
+    gravityspeedy = 0;
     score = 0;
+    level = 1;
+    lives = 5;
     /*static const GLfloat vertex_buffer_data[] = {
         -0.2, -0.2, 0, // vertex 1
         0.2,  -0.2, 0, // vertex 2
@@ -57,47 +60,60 @@ void Player::set_position(float x, float y) {
 void Player::tick(int in_pond) {
     //this->position.x -= speedx;
     if(!in_pond){
-        gravityspeed += gravity;
-        this->position.y += speedy+gravityspeed;
+        gravityspeedy += gravity;
+        this->position.y += speedy+gravityspeedy;
 
         if(this->position.y-this->radius <= -4){
             this->position.y = -4 + this->radius;
             speedy = 0;
-            gravityspeed = 0;
+            gravityspeedy = 0;
             gravity = 0;
         }
     }
 
     if(in_pond){
-        gravityspeed += gravity;
-        this->position.y+=speedy+gravityspeed*0.7;
+        gravityspeedy += gravity;
+        this->position.y+=speedy+gravityspeedy*0.7;
 
     }
+    if(this->position.x > 65)
+        this->position.x = -65;
+    if(this->position.x < -65)
+        this->position.x = 65;
+}
+
+void Player::magnet_force(){
+    //gravity = 0.0002;
+    gravityspeedx += 0.0002;
+    //if(this->position.x - gravityspeedx - this->radius >= -8)
+        this->position.x -= gravityspeedx;
+    //printf("gravityspeedy  = %f", gravityspeedx);
 }
 
 void Player::right(int in_pond) {
-    if(this->position.x + speedx + this->radius <= 8){
+    //if(this->position.x + speedx + this->radius <= 8){
         if(in_pond)
             this->position.x += speedx*0.7;
         else
             this->position.x += speedx;
-    }
+    //}
+
 }
 
 void Player::left(int in_pond) {
-    if(this->position.x - speedx - this->radius >= -8){
+    //if(this->position.x - speedx - this->radius >= -8){
         if(in_pond)
             this->position.x -= speedx*0.7;
         else
             this->position.x -= speedx;
-    }
+    //}
 }
 
 void Player::jump(int on_tramp){
     if(on_tramp)
-        gravityspeed = 0.7;
+        gravityspeedy = 0.6;
     else
-        gravityspeed = 0.5;
+        gravityspeedy = 0.4;
 
     gravity = -0.02;
 }

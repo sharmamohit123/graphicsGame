@@ -7,7 +7,7 @@ Plank::Plank(float x, float y, float l, float w, color_t color) {
     this->length = l;
     this->width = w;
     speed = 0.01;
-    static const GLfloat vertex_buffer_data[] = {
+    GLfloat vertex_buffer_data[] = {
         -this->length/2, this->width, 0, // vertex 1
         -this->length/2,  0, 0, // vertex 2
         this->length/2,  0, 0, // vertex 3
