@@ -18,11 +18,15 @@
 bool   cannon_keyboard_input = true;
 bool   drag_pan = false, old_cki;
 double drag_oldx = -1, drag_oldy = -1;
-
+double press, px=-10, py=-10, x, y;
+bool lbutton_down = false;
 using namespace std;
 
 /* Executed when a regular key is pressed/released/held-down */
 /* Prefered for Keyboard events */
+
+//void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
+
 void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods) {
     // Function is called first on GLFW_PRESS.
 
@@ -64,24 +68,44 @@ void keyboardChar(GLFWwindow *window, unsigned int key) {
 }
 
 /* Executed when a mouse button is pressed/released */
-void mouseButton(GLFWwindow *window, int button, int action, int mods) {
-    switch (button) {
-    case GLFW_MOUSE_BUTTON_LEFT:
-        if (action == GLFW_PRESS) {
-            // Do something
-            return;
-        } else if (action == GLFW_RELEASE) {
-            // Do something
+
+void mouseButton(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if(GLFW_PRESS == action){
+            lbutton_down = true;
         }
-        break;
-    // case GLFW_MOUSE_BUTTON_RIGHT:
-    // if (action == GLFW_RELEASE) {
-    // rectangle_rot_dir *= -1;
-    // }
-    // break;
-    default:
-        break;
+        else if(GLFW_RELEASE == action){
+            lbutton_down = false;
+        }
     }
+
+    if(lbutton_down) {
+         // do your drag here
+        //move_left();
+        glfwGetCursorPos(window, &x, &y);
+        px = x;
+        py = y;
+        cursor_position_callback(window, px, py);
+    }
+}
+
+
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    //glfwGetCursorPos(window, &x, &y);
+    if(lbutton_down){
+        if(xpos-px>0){
+            move_right();
+            //xpos = px;
+        }
+        else{
+            move_left();
+            //xpos = px;
+        }
+        px = xpos;
+    }
+    //printf("yoyo\n");
 }
 
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {

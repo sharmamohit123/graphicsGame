@@ -1,0 +1,35 @@
+## About the game:-
+This is a 2D arcade game developed using OpenGL 3.0.
+
+
+## Controls of the game:-
+
+# Keyboard controls:-
+
+Player left => Left arrow key
+Player right => Right arrow key
+Player jump => Up arrow key
+
+# Mouse controls:-
+
+Player left => Drag left
+Player right => Drag right
+Zoom in => Scroll Up
+Zoom out => Scroll Down
+
+# Panning will happen automatically as the player moves.
+
+## Playing the game:-
+
+# The objective of the game is to score as much as possible.
+# Score, Level and Lives are displayed on the top of the screen.
+# Score increases as the player hits/destroys the enemy balls.
+# Incerase in the score will be different depending on the color of the enemy ball.
+# Game level will increase after reaching the following scores:- 2000 for level2 and 4000 for level 4.
+# On leveling up speed of enemy balls increases.
+# After landing on the moving porcupines, Player lives decreases and player get back to its initial position.
+# Game will end when the player(multi coloured ball) loses all its lives.
+# Magnet appears many times for some period of time during the game play and affects the horizontal motion of player.
+# Some enemy balls have plank of different sizes attached to them at random angles. After hitting these planks player bounces following laws of reflection.
+# Game world is extended till infinity.
+# Basic physics is strictly followed in the game.

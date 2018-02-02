@@ -498,6 +498,7 @@ void touch_plank(){
 
                 ball[plank[i].nball].position.x=-110;
                 plank[i].position.x = ball[plank[i].nball].position.x + ball[plank[i].nball].radius*cos(2*pi*ball[plank[i].nball].angle);
+                player.score+=ball[plank[i].nball].kill_score;
             }
         }
     }

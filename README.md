@@ -1,10 +1,18 @@
-Graphics Boilerplate Code
-=========================
+# Using QTCreator
+- Open QTCreator
+- Press "Open Project" and navigate to project directory
+- Select CMakeLists.txt
+- If you are asked to configure kits, make sure desktop is checked and press continue
+- Build -> Run (Only this needed after editing)
 
-This is boilerplate code for the assignments which might be helpful.
+# Using CLI
+```
+cd path/to/project
+mkdir build
+cd build
+cmake ..
+# Run from here after editing
+make
+./tut
+```
 
-
-License
--------
-
-Copyright &copy; 2018 Mohit sharma <ms892075@gmail.com>
